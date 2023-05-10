@@ -16,6 +16,7 @@
   challenges. With a strong foundation in these essential areas of
   software development, I am ready to take on new and exciting projects
   with confidence and creativity.
+- 💁 What in this rerpository: <br/>Contains mini project I did for learning JavaScript, HTML and CSS.
 - ⚡ Fun fact: <br/>Working at AlignTech as an Automation Developer
 <h3 align="left">Connect with me:</h3>
 <p align="left">

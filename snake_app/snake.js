@@ -9,8 +9,8 @@ const OBSTACLE1_IMAGE = new Image();
 const OBSTACLE2_IMAGE = new Image();
 OBSTACLE1_IMAGE.addEventListener("load", drawGame);
 OBSTACLE2_IMAGE.addEventListener("load", drawGame);
-OBSTACLE1_IMAGE.src = "/images/obstacle1.png";
-OBSTACLE2_IMAGE.src = "/images/obstacle2.png";
+OBSTACLE1_IMAGE.src = "/images/obstacles/obstacle1.png";
+OBSTACLE2_IMAGE.src = "/images/obstacles/obstacle2.png";
 OBSTACLE1_IMAGE.removeEventListener("load", drawGame);
 OBSTACLE2_IMAGE.removeEventListener("load", drawGame);
 

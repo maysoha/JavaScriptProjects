@@ -5,12 +5,14 @@ const [
   QUOTE_INPUT_ELEMENT,
   TIMER_ELEMENT,
   START_BUTTON,
+  RESET_BUTTON,
   remainingCharactersElement,
 ] = [
   "quoteDisplay",
   "quoteInput",
   "timer",
   "startButton",
+  "resetButton",
   "remainingCharacters",
 ].map((id) => document.getElementById(id));
 
@@ -20,6 +22,7 @@ let remainingCharacters = 0;
 
 QUOTE_INPUT_ELEMENT.value = "";
 START_BUTTON.addEventListener("click", startGame);
+RESET_BUTTON.addEventListener("click", clearLocalStorage);
 
 function displayGameHistory() {
   const gameHistory = JSON.parse(localStorage.getItem("gameHistory")) || [];
@@ -137,6 +140,11 @@ function startTimer() {
 
 function getTimerTime() {
   return Math.floor((new Date() - startTime) / 1000);
+}
+
+function clearLocalStorage() {
+  localStorage.clear();
+  displayGameHistory();
 }
 
 displayGameHistory();

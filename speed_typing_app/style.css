@@ -4,6 +4,7 @@
 
 body {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
@@ -25,11 +26,17 @@ body,
 }
 
 .timer {
-  position: absolute;
+  /* position: absolute; */
   top: 2rem;
+  margin-bottom: 2rem;
   font-size: 3rem;
   color: #f0db4f;
   font-weight: bold;
+}
+
+.header {
+  font-size: 3rem;
+  color: #f0db4f;
 }
 
 .quote-display {

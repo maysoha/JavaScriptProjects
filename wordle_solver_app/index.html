@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Wordle Solver</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="alert">
+      <span class="closebtn" onclick="this.parentElement.style.display='none';"
+        >&times;</span
+      >
+      <strong>שגיאה:&ThickSpace;</strong><label for="error-message"></label>
+    </div>
+    <div class="board">
+      <div class="header">
+        <h1>Wordle Solver</h1>
+        <p>השלם את התבנית:</p>
+        <p class="header-explaination">
+          (מילה עם אותיות וסימני שאלה. לדוגמא, עבור מד??ה תקבלו גם מדבקה ומדגרה)
+        </p>
+      </div>
+      <div class="word-container">
+        <div class="box">
+          <input type="text" maxlength="1" data-position="1" />
+        </div>
+        <div class="box">
+          <input type="text" maxlength="1" data-position="2" />
+        </div>
+        <div class="box">
+          <input type="text" maxlength="1" data-position="3" />
+        </div>
+        <div class="box">
+          <input type="text" maxlength="1" data-position="4" />
+        </div>
+        <div class="box">
+          <input type="text" maxlength="1" data-position="5" />
+        </div>
+      </div>
+      <div class="options">
+        <div class="valid-letters">
+          אותיות חובה:&ThinSpace;&ThinSpace;&ThinSpace;&MediumSpace;
+          <input type="text" id="input-must" />
+        </div>
+        <!-- <div class="valid-letters">
+          אותיות לבחירה: <input type="text" id="input-valid" />
+        </div> -->
+        <div class="bad-letters">
+          אותיות לשלול:&ThinSpace;&ThinSpace;
+          <input type="text" id="input-bad" />
+        </div>
+      </div>
+      <button id="solve-button">פתור!</button>
+      <div id="solutions"></div>
+      <script src="index.js"></script>
+    </div>
+  </body>
+</html>

@@ -6797,7 +6797,9 @@ solveButton.addEventListener("click", () => {
       "אותיות לשלול: " +
       (badLettersInput.value ? badLettersInput.value : "(ריק)") +
       newLine;
-    solutionsHTML = `<h2>אין פתרונות</h2><br/><h3>אנא וודא כי התבנית כתובה בצורה תקינה (למשל שהתבנית אינה מכילה אותיות סופיות באמצע או בתחילת התבנית)</h3><br /><h3>במידה והתבנית תקינה, ייתכן כי מדובר בתקלה או במילה חדשה שצריך להוסיף למאגר. אנא דווח במייל: <a href="mailto:${mailto}?subject=${emailSubject}&body=${emailBody}">maysoha10@gmail.com</a></h3>`;
+    solutionsHTML = `<h2>אין פתרונות</h2><br/><h3>אנא וודא כי התבנית כתובה בצורה תקינה (למשל שהתבנית אינה מכילה אותיות סופיות באמצע או בתחילת התבנית)</h3>
+    <br /><h3>במידה והתבנית תקינה, ייתכן כי מדובר בתקלה או במילה חדשה שצריך להוסיף למאגר. אנא דווח במייל: 
+    <a href="mailto:${mailto}?subject=${emailSubject}&body=${emailBody}">maysoha10@gmail.com</a></h3>`;
   }
   solutionsDiv.innerHTML = solutionsHTML;
 });
@@ -6920,6 +6922,5 @@ function addMissingLetters(value) {
   }
 
   value += missingLetters.join("");
-  console.log(value);
   return value;
 }

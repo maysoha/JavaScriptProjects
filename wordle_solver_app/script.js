@@ -1,3 +1,225 @@
+class InputBox {
+  constructor(input, nextInput, prevInput) {
+    this.input = input;
+    this.nextInput = nextInput;
+    this.prevInput = prevInput;
+    this.letterOrQuestionRegex = /^[א-ת?]*$/;
+    this.letterRegex = /^[א-ת]$/;
+    this.mustColor = "var(--must)";
+    this.questionColor = "var(--question)";
+    this.emptyColor = "var(--empty)";
+    this.wrongColor = "var(--wrong)";
+    this.input.addEventListener("input", () => {
+      this.handleInput();
+    });
+    this.input.addEventListener("keydown", (event) => {
+      this.handleKeyDown(event);
+    });
+  }
+
+  handleInput() {
+    if (this.letterOrQuestionRegex.test(this.input.value)) {
+      if (this.letterRegex.test(this.input.value)) {
+        this.input.style.backgroundColor = this.mustColor;
+      } else {
+        this.input.style.backgroundColor = this.questionColor;
+      }
+
+      if (this.input.value !== "" && this.nextInput) {
+        this.nextInput.focus();
+      }
+
+      if (this.input.value === "") {
+        this.input.style.backgroundColor = this.emptyColor;
+      }
+    } else {
+      this.input.style.backgroundColor = this.wrongColor;
+    }
+  }
+
+  handleKeyDown(event) {
+    if (event.key === "Backspace") {
+      wordleSolver.resetSolution();
+      this.input.style.backgroundColor = this.emptyColor;
+      if (this.input.value === "" && this.prevInput) {
+        this.prevInput.focus();
+        this.prevInput.selectionStart = this.prevInput.value.length;
+      }
+    }
+  }
+}
+
+class WordleSolver {
+  constructor(wordList) {
+    this.wordList = wordList;
+    this.onlyLettersRegex = /^[\u0590-\u05FF]+(,[\u0590-\u05FF]+)*$/;
+    this.mustLettersInput = document.querySelector("#input-must");
+    this.badLettersInput = document.querySelector("#input-bad");
+    this.solutionsDiv = document.querySelector("#solutions");
+    this.solveButton = document.querySelector("#solve-button");
+    this.inputs = document.querySelectorAll("input[data-position]");
+    this.alert = document.querySelector(".alert");
+    this.errorMessage = document.querySelector(
+      ".alert label[for='error-message']"
+    );
+
+    this.inputs.forEach((input, index) => {
+      const nextInput = this.inputs[index + 1];
+      const previousInput = this.inputs[index - 1];
+      new InputBox(input, nextInput, previousInput);
+    });
+
+    this.solveButton.addEventListener("click", () => {
+      this.handleSolveButtonClick();
+    });
+
+    this.resetInputes();
+  }
+
+  resetInputes() {
+    this.inputs.forEach((input) => (input.value = ""));
+    this.mustLettersInput.value = "";
+    this.badLettersInput.value = "";
+  }
+
+  resetSolution() {
+    this.solutionsDiv.innerHTML = "";
+  }
+
+  handleSolveButtonClick() {
+    this.alert.style.display = "none";
+
+    if (!this.checkValidation()) {
+      this.resetSolution();
+      return;
+    }
+
+    const lettersInput = this.joinInputBoxes();
+    const solutions = this.solveWordle(lettersInput);
+
+    let solutionsHTML;
+
+    if (solutions.length !== 0) {
+      solutionsHTML = solutions.map((word) => `<h3>${word}</h3>`).join("");
+    } else {
+      const newLine = "%0D%0A";
+      const mailto = "maysoha10@gmail.com";
+      const emailSubject = "דיווח וורדל: מילה לא נמצא";
+      const emailBody =
+        "מילה שלא נמצאה: (השלם כאן)%0D%0Aהתבנית שהקולדה: " +
+        lettersInput +
+        newLine +
+        "אותיות חובה: " +
+        (this.mustLettersInput.value ? this.mustLettersInput.value : "(ריק)") +
+        newLine +
+        "אותיות לשלול: " +
+        (this.badLettersInput.value ? this.badLettersInput.value : "(ריק)") +
+        newLine;
+      solutionsHTML = `<h2>אין פתרונות</h2><br/><h3>אנא וודא כי התבנית כתובה בצורה תקינה (למשל שהתבנית אינה מכילה אותיות סופיות באמצע או בתחילת התבנית)</h3>
+        <br /><h3>במידה והתבנית תקינה, ייתכן כי מדובר בתקלה או במילה חדשה שצריך להוסיף למאגר. אנא דווח במייל: 
+        <a href="mailto:${mailto}?subject=${emailSubject}&body=${emailBody}">maysoha10@gmail.com</a></h3>`;
+    }
+    this.solutionsDiv.innerHTML = solutionsHTML;
+  }
+
+  checkValidation() {
+    if (
+      this.badLettersInput.value &&
+      !this.onlyLettersRegex.test(this.badLettersInput.value)
+    ) {
+      this.badLettersInput.style.backgroundColor = this.wrongColor;
+      this.turnOnErrorMessagee(
+        "אותיות לשלילה חייבות להכיל אותיות בלבד (ללא רווחים וללא פסיק)"
+      );
+      return false;
+    }
+    if (
+      this.mustLettersInput.value &&
+      !this.onlyLettersRegex.test(this.mustLettersInput.value)
+    ) {
+      this.mustLettersInput.style.backgroundColor = this.wrongColor;
+      this.turnOnErrorMessagee(
+        "אותיות חובה חייבות להכיל אותיות בלבד (ללא רווחים וללא פסיק)"
+      );
+      return false;
+    }
+
+    const lettersInput = this.joinInputBoxes();
+    const LETTER_OR_QUESTION_REGEX = /^[א-ת?]*$/;
+    if (!lettersInput || lettersInput.length < 5) {
+      this.turnOnErrorMessagee("יש להשלים את התבנית!");
+      return false;
+    }
+    if (
+      !LETTER_OR_QUESTION_REGEX.test(lettersInput) ||
+      (lettersInput === "?????" &&
+        !this.badLettersInput.value &&
+        !this.mustLettersInput.value)
+    ) {
+      this.turnOnErrorMessagee(
+        "תבנית לא תקינה- התבנית צריכה להיות מורכבת מסימני שאלה בלבד (עם אותיות חובה או עם אותיות לשלילה) או אותיות בעברית עם סימן שאלה אחד לפחות!"
+      );
+      return false;
+    }
+
+    const badArray = Array.from(this.badLettersInput.value);
+    if (
+      badArray.some((letter) => this.mustLettersInput.value.includes(letter))
+    ) {
+      this.turnOnErrorMessagee("אותיות חובה מכילות אותיות לשלילה!");
+      return false;
+    }
+
+    if (badArray.some((letter) => lettersInput.includes(letter))) {
+      this.turnOnErrorMessagee("התבנית מכילה אותיות לשלילה!");
+      return false;
+    }
+    return true;
+  }
+
+  joinInputBoxes() {
+    let joinedInput = "";
+    this.inputs.forEach((input) => {
+      joinedInput += input.value;
+    });
+    return joinedInput;
+  }
+
+  turnOnErrorMessagee(message) {
+    this.alert.style.display = "flex";
+    this.errorMessage.textContent = message;
+  }
+
+  solveWordle(lettersInput) {
+    const regexPattern = new RegExp(
+      "^" + lettersInput.replaceAll("?", "[א-ת]") + "$"
+    );
+    return wordList.filter((word) => {
+      if (!regexPattern.test(word)) {
+        return false;
+      }
+      if (
+        this.badLettersInput.value &&
+        this.badLettersInput.value
+          .split("")
+          .some((letter) => word.includes(letter))
+      ) {
+        return false;
+      }
+      if (
+        this.mustLettersInput.value &&
+        !this.mustLettersInput.value.split("").every((letter) => {
+          return word.includes(letter);
+        })
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }
+}
+
+// Instantiate the WordleSolver class
 const wordList = [
   "אאבזר",
   "אאבחן",
@@ -6693,234 +6915,4 @@ const wordList = [
   "תשקיף",
   "תשתית",
 ];
-const MUST_COLOR = "var(--must)";
-const QUESTION_COLOR = "var(--question)";
-const EMPTY_COLOR = "var(--empty)";
-const WRONG_COLOR = "var(--wrong)";
-const LETTER_OR_QUESTION_REGEX = /^[א-ת?]*$/;
-const ONLY_LETTERS_REGEX = /^[\u0590-\u05FF]+(,[\u0590-\u05FF]+)*$/;
-const LETTER_REGEX = /^[א-ת]$/;
-const mustLettersInput = document.querySelector("#input-must");
-const badLettersInput = document.querySelector("#input-bad");
-const solutionsDiv = document.querySelector("#solutions");
-const solveButton = document.querySelector("#solve-button");
-
-const inputs = document.querySelectorAll("input[data-position]");
-const alert = document.querySelector(".alert");
-const errorMessage = document.querySelector(
-  ".alert label[for='error-message']"
-);
-
-document.addEventListener("DOMContentLoaded", () => {
-  inputs.forEach((input) => (input.value = ""));
-});
-
-inputs.forEach((input, index) => {
-  input.addEventListener("input", () => {
-    if (LETTER_OR_QUESTION_REGEX.test(input.value)) {
-      if (LETTER_REGEX.test(input.value)) {
-        input.style.backgroundColor = MUST_COLOR;
-      } else {
-        input.style.backgroundColor = QUESTION_COLOR;
-      }
-      if (input.value !== "" && index < inputs.length - 1) {
-        inputs[index + 1].focus();
-      }
-      if (input.value === "") {
-        input.style.backgroundColor = EMPTY_COLOR;
-      }
-    } else {
-      input.style.backgroundColor = WRONG_COLOR;
-    }
-  });
-  input.addEventListener("keydown", (event) => {
-    if (event.key === "Backspace") {
-      solutionsDiv.innerHTML = "";
-      input.style.backgroundColor = EMPTY_COLOR;
-      if (input.value === "") {
-        if (index > 0) {
-          const previousInput = inputs[index - 1];
-          previousInput.focus();
-          previousInput.selectionStart = previousInput.value.length;
-        }
-      }
-    }
-  });
-});
-
-function solveWordle(letters) {
-  const regexPattern = new RegExp("^" + letters.replaceAll("?", "[א-ת]") + "$");
-  return wordList.filter((word) => {
-    if (!regexPattern.test(word)) {
-      return false;
-    }
-    if (
-      badLettersInput.value &&
-      badLettersInput.value.split("").some((letter) => word.includes(letter))
-    ) {
-      return false;
-    }
-    if (
-      mustLettersInput.value &&
-      !mustLettersInput.value.split("").every((letter) => word.includes(letter))
-    ) {
-      return false;
-    }
-    return true;
-  });
-}
-
-solveButton.addEventListener("click", () => {
-  alert.style.display = "none";
-  if (!checkValidation()) {
-    solutionsDiv.innerHTML = "";
-    return;
-  }
-  const lettersInput = joinInputBoxes();
-  badLettersInput.value = addMissingLetters(badLettersInput.value);
-  mustLettersInput.value = addMissingLetters(mustLettersInput.value);
-  const solutions = solveWordle(lettersInput);
-  let solutionsHTML;
-  if (solutions.length !== 0) {
-    solutionsHTML = solutions.map((word) => `<h3>${word}</h3>`).join("");
-  } else {
-    const newLine = "%0D%0A";
-    const mailto = "maysoha10@gmail.com";
-    const emailSubject = "דיווח וורדל: מילה לא נמצא";
-    const emailBody =
-      "מילה שלא נמצאה: (השלם כאן)%0D%0Aהתבנית שהקולדה: " +
-      lettersInput +
-      newLine +
-      "אותיות חובה: " +
-      (mustLettersInput.value ? mustLettersInput.value : "(ריק)") +
-      newLine +
-      "אותיות לשלול: " +
-      (badLettersInput.value ? badLettersInput.value : "(ריק)") +
-      newLine;
-    solutionsHTML = `<h2>אין פתרונות</h2><br/><h3>אנא וודא כי התבנית כתובה בצורה תקינה (למשל שהתבנית אינה מכילה אותיות סופיות באמצע או בתחילת התבנית)</h3>
-    <br /><h3>במידה והתבנית תקינה, ייתכן כי מדובר בתקלה או במילה חדשה שצריך להוסיף למאגר. אנא דווח במייל: 
-    <a href="mailto:${mailto}?subject=${emailSubject}&body=${emailBody}">maysoha10@gmail.com</a></h3>`;
-  }
-  solutionsDiv.innerHTML = solutionsHTML;
-});
-
-function turnOnErrorMessagee(message) {
-  alert.style.display = "flex";
-  errorMessage.textContent = message;
-  alert.return;
-}
-
-function checkValidation() {
-  const lettersInput = joinInputBoxes();
-  if (!lettersInput || lettersInput.length < 5) {
-    turnOnErrorMessagee("יש להשלים את התבנית!");
-    return false;
-  }
-  if (
-    !LETTER_OR_QUESTION_REGEX.test(lettersInput) ||
-    (lettersInput === "?????" &&
-      !badLettersInput.value &&
-      !mustLettersInput.value)
-  ) {
-    turnOnErrorMessagee(
-      "תבנית לא תקינה- התבנית צריכה להיות מורכבת מסימני שאלה בלבד או אותיות בעברית עם סימן שאלה אחד לפחות!"
-    );
-    return false;
-  }
-  const badArray = Array.from(addMissingLetters(badLettersInput.value));
-  const isBadInputCollide = !badArray.some((letter) =>
-    mustLettersInput.value.includes(letter)
-  );
-  if (!isBadInputCollide) {
-    turnOnErrorMessagee("אסור להשתמש באותיות שצוינו באותיות לשלילה!");
-    return false;
-  }
-  if (badArray.some((letter) => lettersInput.includes(letter))) {
-    turnOnErrorMessagee("התבנית מכילה אותיות לשלילה!");
-    return false;
-  }
-  if (
-    (badLettersInput.value &&
-      !ONLY_LETTERS_REGEX.test(badLettersInput.value)) ||
-    (mustLettersInput.value && !ONLY_LETTERS_REGEX.test(mustLettersInput.value))
-  ) {
-    turnOnErrorMessagee(
-      "אותיות חובה/בחירה/שלילה: חייבות להכיל רק אותיות (ללא רווחים וללא סימני פיסוק)"
-    );
-    return false;
-  }
-
-  return true;
-}
-
-function joinInputBoxes() {
-  const sortedInputs = [...inputs].sort(
-    (a, b) => a.dataset.position - b.dataset.position
-  );
-  return sortedInputs.map((input) => input.value).join("");
-}
-
-function resetSolution() {
-  solutionsDiv.innerHTML = "";
-}
-
-function addMissingLetters(value) {
-  const missingLetters = [];
-  for (let letter of value) {
-    switch (letter) {
-      case "ץ":
-        if (!value.includes("צ")) {
-          missingLetters.push("צ");
-        }
-        break;
-      case "צ":
-        if (!value.includes("ץ")) {
-          missingLetters.push("ץ");
-        }
-        break;
-      case "ף":
-        if (!value.includes("פ")) {
-          missingLetters.push("פ");
-        }
-        break;
-      case "פ":
-        if (!value.includes("ף")) {
-          missingLetters.push("ף");
-        }
-        break;
-      case "ם":
-        if (!value.includes("מ")) {
-          missingLetters.push("מ");
-        }
-        break;
-      case "מ":
-        if (!value.includes("ם")) {
-          missingLetters.push("ם");
-        }
-        break;
-      case "ן":
-        if (!value.includes("נ")) {
-          missingLetters.push("נ");
-        }
-        break;
-      case "נ":
-        if (!value.includes("ן")) {
-          missingLetters.push("ן");
-        }
-        break;
-      case "ך":
-        if (!value.includes("כ")) {
-          missingLetters.push("כ");
-        }
-        break;
-      case "כ":
-        if (!value.includes("ך")) {
-          missingLetters.push("ך");
-        }
-        break;
-    }
-  }
-
-  value += missingLetters.join("");
-  return value;
-}
+const wordleSolver = new WordleSolver(wordList);

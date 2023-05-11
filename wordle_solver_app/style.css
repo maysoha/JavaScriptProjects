@@ -81,6 +81,10 @@ body {
   animation: colorChange 3s infinite;
 }
 
+h6 {
+  margin-top: 10px;
+}
+
 @keyframes colorChange {
   0% {
     color: white;
